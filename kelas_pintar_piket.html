@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kelas Pintar — Jadwal Piket</title>
+<style>
+:root{--navy:#172554;--blue:#3563e9;--sky:#eaf0ff;--ink:#182238;--muted:#6b7280;--line:#e7eaf1;--green:#15966b;--bg:#f5f7fc}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+header{background:linear-gradient(120deg,#172554,#315de0);color:white;padding:28px 18px 56px}
+.wrap{max-width:980px;margin:auto}.top{display:flex;align-items:center;justify-content:space-between;gap:12px}.brand{font-weight:800;font-size:20px;letter-spacing:.2px}.tag{font-size:12px;background:#ffffff24;padding:7px 11px;border-radius:30px}
+h1{font-size:clamp(26px,5vw,38px);margin:28px 0 8px}.sub{margin:0;color:#dbe5ff}
+main{max-width:980px;margin:-30px auto 50px;padding:0 16px}.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:16px}
+.card{background:white;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 8px 28px #1d2e5a0a}
+.card h2{font-size:17px;margin:0 0 14px}.today{display:flex;justify-content:space-between;gap:12px;align-items:center}.date{color:var(--muted);font-size:13px}
+.day{font-size:24px;font-weight:800;color:var(--navy);margin-top:4px}.pill{background:var(--sky);color:var(--blue);font-size:12px;font-weight:700;padding:7px 10px;border-radius:30px}
+.people{display:grid;gap:10px;margin-top:18px}.person{display:flex;align-items:center;gap:11px;padding:11px 12px;background:#f8f9fd;border:1px solid #edf0f6;border-radius:12px}
+.avatar{width:34px;height:34px;border-radius:11px;background:#e4ebff;color:#315de0;display:grid;place-items:center;font-weight:800}
+.person span{flex:1;font-weight:600}.person small{color:var(--muted)}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+button{border:0;border-radius:10px;padding:10px 14px;font-weight:700;cursor:pointer;font-size:13px}
+.primary{background:var(--blue);color:white}.secondary{background:var(--sky);color:var(--blue)}.soft{background:#f1f3f8;color:#44506a}
+label{display:block;font-size:12px;color:#586174;font-weight:700;margin:12px 0 6px}
+input,textarea,select{width:100%;border:1px solid #dce1eb;border-radius:10px;padding:11px 12px;font:inherit;color:var(--ink);background:white}
+textarea{min-height:105px;resize:vertical}.hint{font-size:12px;color:var(--muted);line-height:1.5;margin-top:8px}
+.days{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.daybtn{background:#f2f4f9;color:#536078;padding:10px 4px}.daybtn.active{background:var(--blue);color:white}
+.task{display:flex;gap:10px;align-items:center;padding:11px 0;border-bottom:1px solid var(--line)}.task:last-child{border:0}.task input{width:17px;height:17px;accent-color:var(--green)}.task.done span{text-decoration:line-through;color:#9299a8}
+.status{font-size:12px;color:var(--muted);margin-top:12px}.full{grid-column:1/-1}
+footer{text-align:center;color:#8790a3;font-size:12px;padding:8px 16px 28px}
+@media(max-width:720px){.grid{grid-template-columns:1fr}.full{grid-column:auto}.days{grid-template-columns:repeat(5,1fr)}}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="top"><div class="brand">✦ KELAS PINTAR</div><div class="tag">Pengingat jadwal piket</div></div>
+  <h1>Jangan lupa piket kelas!</h1><p class="sub">Lihat giliran, cek tugas, dan jaga kelas tetap nyaman bersama.</p>
+</div></header>
+<main><div class="grid">
+  <section class="card">
+    <div class="today"><div><div class="date" id="tanggal"></div><div class="day" id="hariIni">Hari ini</div></div><div class="pill" id="badgeHari">Jadwal piket</div></div>
+    <h2 style="margin-top:22px">Petugas hari ini</h2>
+    <div class="people" id="petugas"></div>
+    <div class="actions"><button class="primary" id="notifBtn">Aktifkan notifikasi</button><button class="secondary" id="selesaiBtn">Tandai semua selesai</button></div>
+    <div class="status" id="notifStatus">Notifikasi akan muncul jika diizinkan dan halaman web sedang terbuka.</div>
+  </section>
+  <section class="card">
+    <h2>Checklist tugas piket</h2>
+    <div id="checklist"></div>
+    <div class="status" id="progress">0 dari 5 tugas selesai</div>
+  </section>
+  <section class="card">
+    <h2>Jadwal piket mingguan</h2>
+    <div class="days" id="pilihHari"></div>
+    <div style="margin-top:16px"><div class="date" id="judulEditor">Edit petugas</div>
+      <label for="namaPetugas">Nama petugas (pisahkan dengan koma)</label>
+      <textarea id="namaPetugas" placeholder="Contoh: Andi, Budi, Citra"></textarea>
+      <button class="primary" id="simpanJadwal" style="margin-top:10px">Simpan jadwal</button>
+    </div>
+  </section>
+  <section class="card">
+    <h2>Atur pengingat</h2>
+    <label for="jamPengingat">Jam pengingat harian</label>
+    <input type="time" id="jamPengingat" value="06:30">
+    <label for="pesanPengingat">Pesan pengingat</label>
+    <input id="pesanPengingat" value="Hari ini giliranmu piket kelas. Jangan lupa, ya!">
+    <button class="primary" id="simpanPengingat" style="margin-top:12px">Simpan pengingat</button>
+    <p class="hint">Agar pengingat bekerja, izinkan notifikasi browser dan buka halaman ini. Jika browser/perangkat menutup halaman, pengingat mungkin tidak muncul.</p>
+  </section>
+</div></main>
+<footer>Kelas Pintar • Data jadwal tersimpan di perangkat/browser ini.</footer>
+<script>
+const hari=["Minggu","Senin","Selasa","Rabu","Kamis","Jumat","Sabtu"];
+const hariKerja=["Senin","Selasa","Rabu","Kamis","Jumat"];
+const defaultJadwal={Senin:["Andi","Budi","Citra"],Selasa:["Dina","Eko","Fajar"],Rabu:["Gita","Hana","Ilham"],Kamis:["Joko","Kiki","Lala"],Jumat:["Mira","Nanda","Oki"]};
+const tugas=["Menyapu lantai","Menghapus papan tulis","Merapikan meja dan kursi","Membuang sampah","Membersihkan area kelas"];
+let jadwal=JSON.parse(localStorage.getItem("kp_jadwal")||"null")||defaultJadwal;
+let dipilih=hariKerja.includes(hari[new Date().getDay()])?hari[new Date().getDay()]:"Senin";
+let status=JSON.parse(localStorage.getItem("kp_status")||"{}");
+let pengingat=JSON.parse(localStorage.getItem("kp_pengingat")||'{"jam":"06:30","pesan":"Hari ini giliranmu piket kelas. Jangan lupa, ya!"}');
+const $=id=>document.getElementById(id);
+function simpan(){localStorage.setItem("kp_jadwal",JSON.stringify(jadwal));localStorage.setItem("kp_status",JSON.stringify(status));}
+function kunci(){return new Date().toISOString().slice(0,10)+"_"+dipilih}
+function renderHari(){
+ const now=new Date(), nama=hari[now.getDay()];
+ $("tanggal").textContent=now.toLocaleDateString("id-ID",{day:"numeric",month:"long",year:"numeric"});
+ $("hariIni").textContent=nama;$("badgeHari").textContent=hariKerja.includes(nama)?"Jadwal piket hari ini":"Tidak ada jadwal piket";
+ const list=jadwal[nama]||[];
+ $("petugas").innerHTML=list.length?list.map((n,i)=>`<div class="person"><div class="avatar">${escapeHtml(n.trim().charAt(0).toUpperCase()||"?")}</div><span>${escapeHtml(n.trim())}</span><small>Petugas ${i+1}</small></div>`).join(""):'<p class="hint">Tidak ada jadwal piket untuk hari ini.</p>';
+}
+function renderChecklist(){
+ const done=status[kunci()]||[];
+ $("checklist").innerHTML=tugas.map((t,i)=>`<label class="task ${done.includes(i)?"done":""}"><input type="checkbox" data-i="${i}" ${done.includes(i)?"checked":""}><span>${t}</span></label>`).join("");
+ $("progress").textContent=`${done.length} dari ${tugas.length} tugas selesai`;
+ document.querySelectorAll("#checklist input").forEach(el=>el.addEventListener("change",e=>{
+   let a=status[kunci()]||[];const i=Number(e.target.dataset.i);
+   status[kunci()]=e.target.checked?[...a,i]:a.filter(x=>x!==i);simpan();renderChecklist();
+ }));
+}
+function renderEditor(){
+ $("pilihHari").innerHTML=hariKerja.map(h=>`<button class="daybtn ${h===dipilih?"active":""}" data-h="${h}">${h.slice(0,3)}</button>`).join("");
+ document.querySelectorAll(".daybtn").forEach(b=>b.onclick=()=>{dipilih=b.dataset.h;renderEditor();renderChecklist();});
+ $("judulEditor").textContent="Edit petugas hari "+dipilih;
+ $("namaPetugas").value=(jadwal[dipilih]||[]).join(", ");
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+$("simpanJadwal").onclick=()=>{
+ jadwal[dipilih]=$("namaPetugas").value.split(",").map(x=>x.trim()).filter(Boolean);
+ simpan();renderHari();renderEditor();alert("Jadwal "+dipilih+" berhasil disimpan!");
+};
+$("selesaiBtn").onclick=()=>{status[kunci()]=[0,1,2,3,4];simpan();renderChecklist();};
+$("notifBtn").onclick=async()=>{
+ if(!("Notification"in window)){alert("Browser ini belum mendukung notifikasi.");return;}
+ const izin=await Notification.requestPermission();
+ $("notifStatus").textContent=izin==="granted"?"Notifikasi sudah diizinkan. Biarkan halaman ini terbuka agar pengingat berjalan.":"Izin notifikasi belum diberikan.";
+};
+$("simpanPengingat").onclick=()=>{
+ pengingat={jam:$("jamPengingat").value,pesan:$("pesanPengingat").value};
+ localStorage.setItem("kp_pengingat",JSON.stringify(pengingat));alert("Pengingat berhasil disimpan!");
+};
+$("jamPengingat").value=pengingat.jam;$("pesanPengingat").value=pengingat.pesan;
+let lastAlert="";
+function cekPengingat(){
+ const d=new Date(), key=d.toDateString()+"_"+pengingat.jam;
+ if(d.getHours()===Number(pengingat.jam.split(":")[0])&&d.getMinutes()===Number(pengingat.jam.split(":")[1])&&lastAlert!==key){
+  lastAlert=key;
+  if("Notification"in window&&Notification.permission==="granted"&&hariKerja.includes(hari[d.getDay()])){
+   new Notification("Pengingat Piket Kelas",{body:(jadwal[hari[d.getDay()]]||[]).join(", ")+". "+pengingat.pesan});
+  }
+ }
+}
+renderHari();renderEditor();renderChecklist();setInterval(cekPengingat,15000);
+</script>
+</body></html>
